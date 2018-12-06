@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable
+            name="tabLicense"
+            type="com.taehoon.garbagealarm.view.TabLicense"/>
+    </data>
+
+    <RelativeLayout
+        android:orientation="vertical" android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/license"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/license_txt"
+            android:textSize="11sp"
+            android:textAlignment="center"
+            android:layout_marginTop="79dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:id="@+id/license2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/license2_txt"
+            android:textSize="11sp"
+            android:textAlignment="center"
+            android:layout_below="@+id/license"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="67dp" />
+
+    </RelativeLayout>
+</layout>

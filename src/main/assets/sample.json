@@ -1,0 +1,41 @@
+
+	{
+		"data" :
+		[
+			{
+				"img" : "android.resource://com.taehoon.garbagealarm/drawable/plastics",
+				"day": "일요일",
+				"comment": "스티로폼, 플라스틱류, 비닐류"
+			},
+			{
+				"img" : "android.resource://com.taehoon.garbagealarm/drawable/plastics",
+				"day": "월요일",
+				"comment": "플라스틱류"
+			},
+			{
+				"img" : "android.resource://com.taehoon.garbagealarm/drawable/paper",
+				"day": "화요일",
+				"comment": "스티로폼, 비닐류(라면, 과자봉지, 비닐 등)"
+			},
+			{
+				"img" : "android.resource://com.taehoon.garbagealarm/drawable/cans",
+				"day": "수요일",
+				"comment": "캔, 고철류"
+			},
+			{
+				"img" : "android.resource://com.taehoon.garbagealarm/drawable/plastic_bag",
+				"day": "목요일",
+				"comment": "스티로폼, 비닐류(라면, 과자봉지, 비닐 등)"
+			},
+			{
+				"img" : "android.resource://com.taehoon.garbagealarm/drawable/plastics",
+				"day": "금요일",
+				"comment": "플라스틱류"
+			},
+			{
+				"img" : "android.resource://com.taehoon.garbagealarm/drawable/bottle",
+				"day": "토요일",
+				"comment": "종이류, 병류, 불연성 쓰레기"
+			}
+		]
+	}

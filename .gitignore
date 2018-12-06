@@ -1,0 +1,5 @@
+/build
+/src/main/java/com/taehoon/garbagealarm/DAO/
+/src/main/AndroidManifest.xml
+!/src/main/res/values/strings.xml
+/src/main/res/values/keyset.xml

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="dayitem"
+            type="com.taehoon.garbagealarm.viewmodel.MemoObserver"/>
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        card_view:cardUseCompatPadding="true"
+        card_view:cardCornerRadius="16dp"
+        android:elevation="16dp"
+        android:onClick="@{dayitem.onClickListenerForIntent()}"
+        >
+
+        <RelativeLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginTop="5dp"
+            >
+
+        <ImageView
+            android:id="@+id/item_img"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="10dp"
+            app:imageUrl="@{dayitem.img}"
+             />
+
+        <TextView
+            android:id="@+id/item_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{dayitem.day}"
+            android:textSize="16dp"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/item_img"
+            android:layout_toEndOf="@+id/item_img" />
+
+            <ImageView
+                android:id="@+id/description"
+                android:src="@drawable/ifmemo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="20dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+
+        <TextView
+            android:id="@+id/item_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{dayitem.comment}"
+            android:textSize="12dp"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/item_title"
+            android:layout_alignBottom="@+id/description"
+            android:layout_toRightOf="@+id/item_img"
+            android:layout_toEndOf="@+id/item_img" />
+
+            <!--<TextView-->
+                <!--android:id="@+id/today"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="오늘!!"-->
+                <!--android:textColor="@color/colorAccent"-->
+                <!--android:textSize="18sp"-->
+                <!--android:layout_above="@+id/description"-->
+                <!--android:layout_alignParentRight="true"-->
+                <!--android:layout_alignParentEnd="true" />-->
+
+            <!--<View-->
+                <!--android:id="@+id/divider"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="1dp"-->
+                <!--android:layout_marginTop="5dp"-->
+                <!--android:layout_marginLeft="20dp"-->
+                <!--android:layout_marginRight="20dp"-->
+                <!--android:layout_below="@+id/item_img"-->
+                <!--android:background="@android:color/black" />-->
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+</layout>

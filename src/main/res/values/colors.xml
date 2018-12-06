@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="colorPrimary">#50cc7f</color>
+    <color name="colorPrimaryDark">#50cc7f</color>
+    <!--<color name="colorPrimary">#51E895</color>-->
+    <!--<color name="colorPrimaryDark">#3D9966</color>-->
+    <color name="colorAccent">#FF7265</color>
+    <color name="defaultColor">#ffffff</color>
+    <color name="today">#ff9f3f</color>
+    <color name="gray_txt">#c7c7c7</color>
+    <color name="unclickedTxt">#000000</color>
+    <color name="clickedTxt">#51E895</color>
+    <color name="clickedBackground">#01A147</color>
+</resources>
