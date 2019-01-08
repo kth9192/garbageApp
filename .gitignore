@@ -3,3 +3,6 @@
 /src/main/AndroidManifest.xml
 !/src/main/res/values/strings.xml
 /src/main/res/values/keyset.xml
+release/release/app.aab
+app.iml
+app.iml
