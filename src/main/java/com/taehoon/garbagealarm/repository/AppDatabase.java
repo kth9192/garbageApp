@@ -2,6 +2,7 @@ package com.taehoon.garbagealarm.repository;
 
 import android.content.Context;
 
+import com.taehoon.garbagealarm.repository.addrrepository.AddrDao;
 import com.taehoon.garbagealarm.repository.alarmrepository.AlarmDao;
 import com.taehoon.garbagealarm.repository.alarmrepository.AlarmConverter;
 import com.taehoon.garbagealarm.repository.alarmrepository.AlarmRoom;
@@ -21,6 +22,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract MemoDao chatDao();
     public abstract AlarmDao alarmDao();
     public abstract ConfigDao configDao();
+    public abstract AddrDao addrDao();
 
     private static AppDatabase INSTANCE;
 
