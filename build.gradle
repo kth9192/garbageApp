@@ -25,6 +25,14 @@ android {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
     }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+    useLibrary 'android.test.runner'
+    useLibrary 'android.test.base'
+    useLibrary 'android.test.mock'
 }
 
 
@@ -45,11 +53,17 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.8.0'
     implementation 'com.github.wooplr:Spotlight:1.2.3'
 
-
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.0.0'
 
     implementation 'androidx.room:room-runtime:2.1.0-alpha03'
     annotationProcessor 'androidx.room:room-compiler:2.1.0-alpha03'
     androidTestImplementation 'androidx.room:room-testing:2.1.0-alpha03'
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'androidx.test:core:1.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    testImplementation 'org.robolectric:robolectric:4.1'
+    testImplementation 'org.mockito:mockito-core:2.23.4'
+    androidTestImplementation 'org.mockito:mockito-android:2.6.3'
 }

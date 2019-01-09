@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 
 public class AddrRepository {
 
@@ -29,7 +30,12 @@ public class AddrRepository {
         return alarmDao.getAll();
     }
 
-    public void delete(String key){
-        executorService.execute(() -> alarmDao.delete(key));
+    public List<AddrRoom> getAllAsync(){
+        return alarmDao.getAllAsync();
     }
+
+    public int getItemCount(){
+        return alarmDao.getItemCount();
+    }
+
 }

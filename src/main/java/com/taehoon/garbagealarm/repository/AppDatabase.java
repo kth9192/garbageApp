@@ -3,6 +3,8 @@ package com.taehoon.garbagealarm.repository;
 import android.content.Context;
 
 import com.taehoon.garbagealarm.repository.addrrepository.AddrDao;
+import com.taehoon.garbagealarm.repository.addrrepository.AddrRepository;
+import com.taehoon.garbagealarm.repository.addrrepository.AddrRoom;
 import com.taehoon.garbagealarm.repository.alarmrepository.AlarmDao;
 import com.taehoon.garbagealarm.repository.alarmrepository.AlarmConverter;
 import com.taehoon.garbagealarm.repository.alarmrepository.AlarmRoom;
@@ -16,7 +18,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {MemoRoom.class, AlarmRoom.class, ConfigRoom.class}, version = 1, exportSchema = false)
+@Database(entities = {MemoRoom.class, AlarmRoom.class, ConfigRoom.class, AddrRoom.class}, version = 1, exportSchema = false)
 @TypeConverters({AlarmConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract MemoDao chatDao();

@@ -8,10 +8,16 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
-import androidx.core.app.ActivityCompat;
+
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
+
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.widget.Toast;
 
 import com.gun0912.tedpermission.TedPermission;
@@ -21,6 +27,7 @@ import com.taehoon.garbagealarm.model.cleanhouse.CleanHouseModel;
 import com.taehoon.garbagealarm.model.cleanhouse.ItemModel;
 import com.taehoon.garbagealarm.model.cleanhouse.NGeoDomain;
 import com.taehoon.garbagealarm.model.cleanhouse.NgeoCodeModel;
+import com.taehoon.garbagealarm.repository.addrrepository.AddrRoom;
 import com.taehoon.garbagealarm.viewmodel.apihelper.CleanHouseHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,6 +42,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by kth919 on 2017-11-08.
@@ -57,6 +68,18 @@ public class GmapLogic {
     private Gson gson = new Gson();
     private NgeoCodeModel nGeoItem;
 
+    private LifecycleOwner lifecycleOwner;
+    private AddrViewModel addrViewModel;
+
+    public void setLifecycleOwner(LifecycleOwner lifecycleOwner) {
+        this.lifecycleOwner = lifecycleOwner;
+    }
+
+    public void setAddrViewModel(AddrViewModel addrViewModel) {
+        this.addrViewModel = addrViewModel;
+    }
+
+
 //    private static double longitudeStart;    //경도
 //    private static double latitudeStart;
 
@@ -67,7 +90,7 @@ public class GmapLogic {
         cleanHouseHelper = new CleanHouseHelper(context.getString(R.string.cleanhouse_key));
     }
 
-    public void doCheckPermission(){
+    public void doCheckPermission() {
         if (!isPermissionCheck()) {
             onProviderEnabled();
             TedPermission.with(context)
@@ -83,35 +106,36 @@ public class GmapLogic {
         ArrayList<MarkerOptions> markerResult = new ArrayList<>();
         ArrayList<CleanHouseModel> cleanHouseList = new ArrayList<>();
 
-        HouseApiTask houseApiTask = new HouseApiTask();
-        houseApiTask.start();
-
-        try {
-            houseApiTask.join();
-        } catch (InterruptedException e) {
-            Log.e(TAG, "house thread error" + e);
-        }
-        cleanHouseList = houseApiTask.getTmpHouseModel();
-
-        ArrayList<CleanHouseModel> tmplist = new ArrayList<>();
-
-        for (int i = 0; i<cleanHouseList.size(); i++){
-//            if (isCorrectRange(new LatLng(latitudeStart, longitudeStart),
-//                    new LatLng(cleanHouseList.get(i).getMapX(), cleanHouseList.get(i).getMapY() ))){
+//            HouseApiTask houseApiTask = new HouseApiTask();
+//            houseApiTask.start();
+//
+//            try {
+//                houseApiTask.join();
+//            } catch (InterruptedException e) {
+//                Log.e(TAG, "house thread error" + e);
 //            }
+//
+//            cleanHouseList = houseApiTask.getTmpHouseModel();
+//
+//            ArrayList<CleanHouseModel> tmplist = new ArrayList<>();
+//
+//            for (int i = 0; i<cleanHouseList.size(); i++){
+////            if (isCorrectRange(new LatLng(latitudeStart, longitudeStart),
+////                    new LatLng(cleanHouseList.get(i).getMapX(), cleanHouseList.get(i).getMapY() ))){
+////            }
+//
+//                tmplist.add(new CleanHouseModel(cleanHouseList.get(i).getAddr(), cleanHouseList.get(i).getDong(), cleanHouseList.get(i).getLocation(),
+//                        cleanHouseList.get(i).getMapX(), cleanHouseList.get(i).getMapY()));
+//
+//            }
+//
+////        Log.d(TAG, "소스 " + String.valueOf("x좌표" + tmplist.get(0).getMapX()
+////                + "y좌표" + tmplist.get(0).getMapY()));
+//
+//            cleanHouseList = getNearHouse(addr, tmplist);
 
-            tmplist.add(new CleanHouseModel(cleanHouseList.get(i).getAddr(), cleanHouseList.get(i).getDong(), cleanHouseList.get(i).getLocation(),
-                    cleanHouseList.get(i).getMapX(), cleanHouseList.get(i).getMapY()));
-            Log.d(TAG, tmplist.get(tmplist.size() - 1).getAddr());
-        }
-
-        Log.d(TAG, "소스 " + String.valueOf("x좌표" + tmplist.get(0).getMapX()
-                + "y좌표" + tmplist.get(0).getMapY()));
-
-        ArrayList<CleanHouseModel> tmpGeoList = getNearHouse(addr, tmplist);
-//        Log.d(TAG, String.valueOf(tmpGeoList.get(0).getMapX()));
-
-        GetHouseTask getHouseTask = new GetHouseTask(tmpGeoList);
+        cleanHouseList = getGeoList(addr);
+        GetHouseTask getHouseTask = new GetHouseTask(cleanHouseList);
         getHouseTask.start();
 
         try {
@@ -119,9 +143,59 @@ public class GmapLogic {
         } catch (InterruptedException e) {
             Log.e(TAG, "finalResult thread error " + e);
         }
+
         markerResult = getHouseTask.getResult();
 
         return markerResult;
+    }
+
+    private void setLocalDB(ArrayList<CleanHouseModel> sources) {
+
+        for (CleanHouseModel e : sources) {
+            addrViewModel.insert(e);
+        }
+    }
+
+    private ArrayList<CleanHouseModel> getGeoList(String addr) {
+
+        //TODO: 리팩토링 필수. 중복코드 제거
+
+        ArrayList<CleanHouseModel> answer = new ArrayList<>();
+        ArrayList<CleanHouseModel> cleanHouseList;
+
+        if (addrViewModel.getItemCount() == 0) {
+
+            HouseApiTask houseApiTask = new HouseApiTask();
+            houseApiTask.start();
+
+            try {
+                houseApiTask.join();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "house thread error" + e);
+            }
+
+            cleanHouseList = houseApiTask.getTmpHouseModel();
+
+            ArrayList<CleanHouseModel> tmplist = new ArrayList<>();
+
+            for (int i = 0; i < cleanHouseList.size(); i++) {
+
+                tmplist.add(new CleanHouseModel(cleanHouseList.get(i).getAddr(), cleanHouseList.get(i).getDong(), cleanHouseList.get(i).getLocation(),
+                        cleanHouseList.get(i).getMapX(), cleanHouseList.get(i).getMapY()));
+            }
+
+            answer = getNearHouse(addr, tmplist);
+            setLocalDB(cleanHouseList);
+            return answer;
+
+        }else {
+            for (AddrRoom tmp : addrViewModel.getAllAsync()){
+                answer.add(new CleanHouseModel(tmp.getAddr(), tmp.getDong(), tmp.getLocation(),
+                        tmp.getMapX(), tmp.getMapY()));
+            }
+            return answer;
+
+        }
     }
 
     private ArrayList<CleanHouseModel> getNearHouse(String addr, ArrayList<CleanHouseModel> apiAddr) {
@@ -150,8 +224,8 @@ public class GmapLogic {
                 if (mapPoint != null) {
                     result.add(new CleanHouseModel(apiAddr.get(i).getAddr(), apiAddr.get(i).getDong(), apiAddr.get(i).getLocation(),
                             mapPoint.getMapX(), mapPoint.getMapY()));
-                    Log.d(TAG, "맵포인트 확인" + result.get(result.size()-1).getLocation() + " : " + result.get(result.size()-1).getAddr());
-                }else {
+                    Log.d(TAG, "맵포인트 확인" + result.get(result.size() - 1).getLocation() + " : " + result.get(result.size() - 1).getAddr());
+                } else {
                     Log.i(TAG, "맵포인트 null");
                 }
             }
@@ -265,7 +339,7 @@ public class GmapLogic {
 
     //GPS 설정 체크
     private void onProviderEnabled() {
-        new AlertDialog.Builder(context)
+        new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.myDialog))
                 .setMessage(R.string.permission_phrases_gps)
                 .setPositiveButton("설정", new DialogInterface.OnClickListener() {
                     @Override
@@ -336,13 +410,13 @@ public class GmapLogic {
         @Override
         public void onProviderDisabled(String provider) {
 //            Log.d(TAG, "onProviderDisabled");
-            if (provider.equals("gps")){
+            if (provider.equals("gps")) {
                 locationManager.removeUpdates(mMyLocationListener);
             }
         }
     };
 
-    public void updateMyLocation (GoogleMap googlemap){
+    public void updateMyLocation(GoogleMap googlemap) {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 //            Log.i(TAG, "권한 문제");
@@ -380,7 +454,7 @@ public class GmapLogic {
                 tmpHouseModel = cleanHouseHelper.apiParserInit();
                 Log.d(TAG, "api 확인 : " + tmpHouseModel.get(0).getAddr());
             } catch (Exception e) {
-                Log.e(TAG, "api async 에러"+ String.valueOf(e));
+                Log.e(TAG, "api async 에러" + String.valueOf(e));
             }
         }
 
@@ -406,7 +480,7 @@ public class GmapLogic {
 
             if (tmpPoint != null) {
                 Log.d(TAG2, "load after" + tmpPoint.getMapX() + ": " + tmpPoint.getMapY());
-            }else {
+            } else {
                 Log.d(TAG2, "tmpPoint null");
             }
         }
@@ -417,7 +491,7 @@ public class GmapLogic {
     }
 
 
-    private class GetHouseTask extends Thread{
+    private class GetHouseTask extends Thread {
 
         ArrayList<CleanHouseModel> tmpGeoList;
 
@@ -434,8 +508,8 @@ public class GmapLogic {
             LatLng tmpLocation;
 
             for (int i = 0; i < tmpGeoList.size(); i++) {
-                tmpLocation = new LatLng(tmpGeoList.get(i).getMapY() , tmpGeoList.get(i).getMapX());
-                Log.d(TAG, "좌표확인" + tmpLocation.toString() );
+                tmpLocation = new LatLng(tmpGeoList.get(i).getMapY(), tmpGeoList.get(i).getMapX());
+                Log.d(TAG, "좌표확인" + tmpLocation.toString());
 
                 tmptitle.append(tmpGeoList.get(i).getLocation());
                 result.add(new MarkerOptions().position(tmpLocation).title(tmptitle.toString()));
@@ -450,7 +524,7 @@ public class GmapLogic {
     }
 
     public boolean isPermissionCheck() {
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             permissionCheck = false;
         }
         return permissionCheck;

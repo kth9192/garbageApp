@@ -12,57 +12,51 @@ public class AddrRoom {
     @PrimaryKey
     @NonNull
     private String id;
-    private ArrayList<String> daylist;
-    private String memo;
-    private String time;
-    private String tag;
 
-    public AddrRoom(String id, ArrayList<String> daylist, String memo, String time, String tag) {
+    private String addr;
+    private String dong;
+    private String location;
+
+    private Double mapX;
+    private Double mapY;
+
+    public AddrRoom(String id, String addr, String dong, String location, Double mapX, Double mapY) {
         this.id = id;
-        this.daylist = daylist;
-        this.memo = memo;
-        this.time = time;
-        this.tag = tag;
-
+        this.addr = addr;
+        this.dong = dong;
+        this.location = location;
+        this.mapX = mapX;
+        this.mapY = mapY;
     }
 
+    @NonNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NonNull String id) {
         this.id = id;
     }
 
-    public ArrayList<String> getDaylist() {
-        return daylist;
+    public String getAddr() {
+        return addr;
     }
 
-    public void setDaylist(ArrayList<String> daylist) {
-        this.daylist = daylist;
+    public String getDong() {
+        return dong;
     }
 
-    public String getMemo() {
-        return memo;
+    public String getLocation() {
+        return location;
     }
 
-    public void setMemo(String memo) {
-        this.memo = memo;
+    public Double getMapX() {
+        return mapX;
     }
 
-    public String getTime() {
-        return time;
+    public Double getMapY() {
+        return mapY;
     }
 
-    public void setTime(String time) {
-        this.time = time;
-    }
 
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
 }

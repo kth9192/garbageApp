@@ -10,12 +10,15 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +30,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.taehoon.garbagealarm.R;
 import com.taehoon.garbagealarm.databinding.TabFragment3Binding;
 import com.taehoon.garbagealarm.gpshelpler.GpsReceiver;
+import com.taehoon.garbagealarm.viewmodel.AddrViewModel;
 import com.taehoon.garbagealarm.viewmodel.GmapLogic;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
@@ -38,12 +42,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Created by kth919 on 2017-11-08.
  */
 
-public class TabFragment3 extends Fragment implements OnMapReadyCallback{
+public class TabFragment3 extends Fragment implements OnMapReadyCallback {
 
     private static String TAG = TabFragment3.class.getName();
     private TabFragment3Binding tabFragment3Binding;
@@ -55,61 +60,66 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback{
     private ArrayList<MarkerOptions> tmp;
     private GpsReceiver gpsReceiver = new GpsReceiver();
     private ProgressDialog progressDialog;
-    private  MultiThreading backgroundThread;
+    private MultiThreading backgroundThread;
     private Bundle savedInstanceState;
+    private AddrViewModel addrViewModel;
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser && savedInstanceState != null){
-
+        if (isVisibleToUser && savedInstanceState != null) {
         }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            this.savedInstanceState = savedInstanceState;
+        super.onCreate(savedInstanceState);
+        this.savedInstanceState = savedInstanceState;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        gmapLogic = new GmapLogic(getContext());
 
-            tabFragment3Binding = DataBindingUtil.inflate(inflater, R.layout.tab_fragment_3, container, false);
-            mapFragment =  (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
 
+        tabFragment3Binding = DataBindingUtil.inflate(inflater, R.layout.tab_fragment_3, container, false);
+        mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
+
+        if (mapFragment != null) {
             mapFragment.getMapAsync(this);
+        }
+        addrViewModel = ViewModelProviders.of(this).get(AddrViewModel.class);
 
-            view = tabFragment3Binding.getRoot();
+        gmapLogic = new GmapLogic(getContext());
+        gmapLogic.setAddrViewModel(addrViewModel);
+        view = tabFragment3Binding.getRoot();
 
-            progressDialog = new ProgressDialog(getContext());
+        progressDialog = new ProgressDialog(new ContextThemeWrapper(getContext(), R.style.myDialog));
 
-                autocompleteFragment = (SupportPlaceAutocompleteFragment) getChildFragmentManager()
-                        .findFragmentById(R.id.place_auto_fragment);
+        autocompleteFragment = (SupportPlaceAutocompleteFragment) getChildFragmentManager()
+                .findFragmentById(R.id.place_auto_fragment);
 
-                if (autocompleteFragment != null) {
-                    autocompleteFragment.setHint("동,리 검색 ex) 아라2동, 귀덕리");
-                    autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-                        @Override
-                        public void onPlaceSelected(Place place) {
-                            Log.d(TAG, "장소 정보 : " + place.toString());
+        if (autocompleteFragment != null) {
+            autocompleteFragment.setHint("동,리 검색 ex) 아라2동, 귀덕리");
+            autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+                @Override
+                public void onPlaceSelected(Place place) {
+                    Log.d(TAG, "장소 정보 : " + place.toString());
 
-                            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                            progressDialog.setMessage("로딩중...");
-                            progressDialog.show();
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progressDialog.setMessage("로딩중...");
+                    progressDialog.show();
 
-                            backgroundThread = new MultiThreading(place.getName().toString());
-                            backgroundThread.start();
+                    backgroundThread = new MultiThreading(place.getName().toString());
+                    backgroundThread.start();
 
-                        }
-
-                        @Override
-                        public void onError(Status status) {
-                            Log.d(TAG, "장소 검색 실패" + status);
-                        }
-                    });
                 }
+
+                @Override
+                public void onError(Status status) {
+                    Log.d(TAG, "장소 검색 실패" + status);
+                }
+            });
+        }
 
         return view;
     }
@@ -176,7 +186,7 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback{
         getContext().registerReceiver(gpsReceiver, gpsFilter);
     }
 
-    private class MultiThreading extends Thread{
+    private class MultiThreading extends Thread {
 
         private String addr;
         ArrayList<MarkerOptions> answer;
@@ -189,9 +199,7 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback{
         public void run() {
             super.run();
             answer = gmapLogic.getNearHouseMarker(addr);
-//            for (int i = 0; i < answer.size(); i++) {
-//                Log.d(TAG, "where" + answer.get(i).getTitle());
-//            }
+
             handler.sendMessage(handler.obtainMessage());
         }
 
@@ -201,13 +209,15 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback{
     }
 
     @SuppressLint("HandlerLeak")
-    Handler handler = new Handler(){
+    Handler handler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+
             progressDialog.dismiss();
             boolean retry = true;
+
             while (retry) {
                 try {
                     backgroundThread.join();
@@ -225,12 +235,12 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback{
 
                     mGoogleMap.clear();
 
-                    if(tmp.size() != 0){
+                    if (tmp.size() != 0) {
                         for (int i = 0; i < tmp.size(); i++) {
                             mGoogleMap.addMarker(tmp.get(i));
 //                                    .setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marker_rounded_green));
                         }
-                    }else {
+                    } else {
                         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                         builder.setMessage("잘못된 주소입니다! 동, 리로 입력해 보세요.")
                                 .setTitle("오류창");
