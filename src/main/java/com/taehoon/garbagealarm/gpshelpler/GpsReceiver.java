@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 import android.widget.Toast;
 
+import com.taehoon.garbagealarm.MapUtil;
 import com.taehoon.garbagealarm.viewmodel.GmapLogic;
 import com.google.android.gms.maps.GoogleMap;
 
@@ -18,18 +19,19 @@ import com.google.android.gms.maps.GoogleMap;
 public class GpsReceiver extends BroadcastReceiver {
 
     private static String TAG = GpsReceiver.class.getName();
-    GmapLogic gmapLogic;
-    GoogleMap googleMap;
+    private MapUtil mapUtil;
+    private GoogleMap googleMap;
 
-    public void setGoogleMap(GoogleMap googleMap) {
+    public GpsReceiver(GoogleMap googleMap) {
         this.googleMap = googleMap;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        gmapLogic = new GmapLogic(context);
 
-        if (intent.getAction().matches("android.location.PROVIDERS_CHANGED") && gmapLogic.isPermissionCheck() ) {
+        mapUtil = new MapUtil(context);
+
+        if (intent.getAction().matches("android.location.PROVIDERS_CHANGED") && mapUtil.isPermissionCheck() ) {
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -43,7 +45,7 @@ public class GpsReceiver extends BroadcastReceiver {
                 return;
             }
             Toast.makeText(context, "gps켜짐", Toast.LENGTH_LONG).show();
-            gmapLogic.updateMyLocation(googleMap);
+            mapUtil.updateMyLocation(googleMap);
         }else {
             googleMap.setMyLocationEnabled(false);
         }

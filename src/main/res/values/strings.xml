@@ -16,6 +16,9 @@
         </u>
     </string>
 
+    <string name="search_hint">동,리 검색 ex) 아라2동, 귀덕리
+    </string>
+
     <string name="license_txt">
                 본 어플리케이션에 사용된 아이콘은 The Recycling Partnership의 Free for commercial use license의 허가 아래 사용 되었습니다.\n\n
                 본 어플리케이션에 사용된 아이콘은 Flaticon의 Freepik 가 제작한 아이콘이 사용되었습니다.\n\n

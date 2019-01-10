@@ -46,7 +46,6 @@ public class CleanHouseHelper {
 
             CleanHouseApi cleanHouseApi = new CleanHouseApi(apiKey, startPage, pagaeSize);
             URL url = new URL(cleanHouseApi.getAPIurl());
-            Log.d(TAG, "URL확인 + "+ url);
 
             BufferedInputStream bis = new BufferedInputStream(url.openStream());
             xpp.setInput(bis, "UTF-8");
@@ -58,20 +57,20 @@ public class CleanHouseHelper {
 
                 if (event_type == XmlPullParser.START_TAG) {
                     tag = xpp.getName();
-                    Log.d(TAG, "시작 로그" + tag);
+//                    Log.d(TAG, "시작 로그" + tag);
                 } else if (event_type == XmlPullParser.TEXT) {
-                    Log.d(TAG, "로그" + tag);
+//                    Log.d(TAG, "로그" + tag);
 
                     if (tag != null && tag.equals("address")) {
 
                         addr = xpp.getText();
-                        Log.d(TAG, "주소" + addr);
+//                        Log.d(TAG, "주소" + addr);
                     }else if (tag != null && tag.equals("dong")){
                         dong = xpp.getText();
-                        Log.d(TAG, "동" + dong);
+//                        Log.d(TAG, "동" + dong);
                     }else if (tag != null && tag.equals("location")){
                         location = xpp.getText();
-                        Log.d(TAG, "위치" + location);
+//                        Log.d(TAG, "위치" + location);
                     }
                     else if (tag != null && tag.equals("mapx")){
 
@@ -81,18 +80,18 @@ public class CleanHouseHelper {
                         }else {
                             mapX = Double.parseDouble(xpp.getText());
                         }
-                        Log.d(TAG, "x좌표" + mapX);
+//                        Log.d(TAG, "x좌표" + mapX);
                     }else if (tag != null && tag.equals("mapy")){
 
                         mapY = Double.parseDouble(xpp.getText());
-                        Log.d(TAG, "y좌표" + mapY);
+//                        Log.d(TAG, "y좌표" + mapY);
                     }
                 } else if (event_type == XmlPullParser.END_TAG) {
                     tag = xpp.getName();
-                    Log.d(TAG, "닫기 로그" + tag);
+//                    Log.d(TAG, "닫기 로그" + tag);
 
                     if (tag.equals("list")) {
-                        Log.d(TAG, "추가");
+
                         tmpList.add(new CleanHouseModel(addr, dong, location, mapX, mapY));
                     }
                 }

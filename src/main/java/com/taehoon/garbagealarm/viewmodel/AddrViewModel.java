@@ -3,11 +3,13 @@ package com.taehoon.garbagealarm.viewmodel;
 import android.app.Application;
 import android.content.Context;
 
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.taehoon.garbagealarm.MainActivity;
 import com.taehoon.garbagealarm.model.cleanhouse.CleanHouseModel;
 import com.taehoon.garbagealarm.repository.addrrepository.AddrRepository;
 import com.taehoon.garbagealarm.repository.addrrepository.AddrRoom;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,12 +24,12 @@ public class AddrViewModel extends AndroidViewModel {
     private AddrRepository addrRepository;
     private LiveData<List<AddrRoom>> listLiveData;
     private MediatorLiveData<List<AddrRoom>> mlistLiveData = new MediatorLiveData<>();
-
     private GmapLogic gmapLogic;
 
     public AddrViewModel(@NonNull Application application) {
         super(application);
         this.addrRepository = new AddrRepository(application);
+        gmapLogic = new GmapLogic(application);
     }
 
     public LiveData<List<AddrRoom>> getListLiveData() {
@@ -58,8 +60,8 @@ public class AddrViewModel extends AndroidViewModel {
         return addrRepository.getItemCount();
     }
 
-    public GmapLogic getGmapLogic() {
-        return gmapLogic;
+    public ArrayList<MarkerOptions> getMarks(String addr) {
+        return gmapLogic.getNearHouseMarker(addr, this);
     }
 
 }

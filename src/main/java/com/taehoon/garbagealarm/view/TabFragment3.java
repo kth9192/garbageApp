@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
@@ -24,9 +25,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.taehoon.garbagealarm.MapUtil;
 import com.taehoon.garbagealarm.R;
 import com.taehoon.garbagealarm.databinding.TabFragment3Binding;
 import com.taehoon.garbagealarm.gpshelpler.GpsReceiver;
@@ -51,18 +52,18 @@ import java.util.Objects;
 public class TabFragment3 extends Fragment implements OnMapReadyCallback {
 
     private static String TAG = TabFragment3.class.getName();
-    private TabFragment3Binding tabFragment3Binding;
     private SupportMapFragment mapFragment;
-    private SupportPlaceAutocompleteFragment autocompleteFragment;
     private static View view;
+
     private GoogleMap mGoogleMap;
-    private GmapLogic gmapLogic;
     private ArrayList<MarkerOptions> tmp;
-    private GpsReceiver gpsReceiver = new GpsReceiver();
+    private GpsReceiver gpsReceiver;
     private ProgressDialog progressDialog;
     private MultiThreading backgroundThread;
     private Bundle savedInstanceState;
+
     private AddrViewModel addrViewModel;
+    private MapUtil mapUtil;
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
@@ -78,28 +79,26 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-
-        tabFragment3Binding = DataBindingUtil.inflate(inflater, R.layout.tab_fragment_3, container, false);
+        TabFragment3Binding tabFragment3Binding = DataBindingUtil.inflate(inflater, R.layout.tab_fragment_3, container, false);
         mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
+        mapUtil = new MapUtil(getContext());
 
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
         addrViewModel = ViewModelProviders.of(this).get(AddrViewModel.class);
 
-        gmapLogic = new GmapLogic(getContext());
-        gmapLogic.setAddrViewModel(addrViewModel);
         view = tabFragment3Binding.getRoot();
 
         progressDialog = new ProgressDialog(new ContextThemeWrapper(getContext(), R.style.myDialog));
 
-        autocompleteFragment = (SupportPlaceAutocompleteFragment) getChildFragmentManager()
+        SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment) getChildFragmentManager()
                 .findFragmentById(R.id.place_auto_fragment);
 
         if (autocompleteFragment != null) {
-            autocompleteFragment.setHint("동,리 검색 ex) 아라2동, 귀덕리");
+            autocompleteFragment.setHint(getContext().getResources().getString(R.string.search_hint));
             autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
                 @Override
                 public void onPlaceSelected(Place place) {
@@ -111,7 +110,6 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
 
                     backgroundThread = new MultiThreading(place.getName().toString());
                     backgroundThread.start();
-
                 }
 
                 @Override
@@ -132,7 +130,7 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        getContext().unregisterReceiver(gpsReceiver);
+        Objects.requireNonNull(getContext()).unregisterReceiver(gpsReceiver);
     }
 
     @Override
@@ -143,15 +141,16 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
     @Override
     public void onStart() {
         super.onStart();
-        gmapLogic.doCheckPermission();
+        mapUtil.doCheckPermission();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
         mGoogleMap = googleMap;
+        gpsReceiver = new GpsReceiver(mGoogleMap);
 
-        if (!gmapLogic.isPermissionCheck()) {
+        if (!mapUtil.isPermissionCheck()) {
             Log.i(TAG, "GPS 권한 해제");
 
             LatLng defaultlocation = new LatLng(33.3759, 126.5266);
@@ -165,7 +164,7 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
         } else {
             Log.i(TAG, "GPS 권한 허가");
 
-            Log.i(TAG, String.valueOf(mGoogleMap.getUiSettings().isMyLocationButtonEnabled()));
+//            Log.i(TAG, String.valueOf(mGoogleMap.getUiSettings().isMyLocationButtonEnabled()));
 
             if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -178,11 +177,10 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            gmapLogic.updateMyLocation(mGoogleMap);
+            mapUtil.updateMyLocation(mGoogleMap);
         }
 
         IntentFilter gpsFilter = new IntentFilter("android.location.PROVIDERS_CHANGED");
-        gpsReceiver.setGoogleMap(googleMap);
         getContext().registerReceiver(gpsReceiver, gpsFilter);
     }
 
@@ -191,15 +189,15 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
         private String addr;
         ArrayList<MarkerOptions> answer;
 
-        public MultiThreading(String addr) {
+        MultiThreading(String addr) {
             this.addr = addr;
         }
 
         @Override
         public void run() {
             super.run();
-            answer = gmapLogic.getNearHouseMarker(addr);
-
+//            answer = gmapLogic.getNearHouseMarker(addr, addrViewModel);
+            answer = addrViewModel.getMarks(addr);
             handler.sendMessage(handler.obtainMessage());
         }
 
@@ -238,7 +236,6 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
                     if (tmp.size() != 0) {
                         for (int i = 0; i < tmp.size(); i++) {
                             mGoogleMap.addMarker(tmp.get(i));
-//                                    .setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marker_rounded_green));
                         }
                     } else {
                         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
