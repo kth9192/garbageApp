@@ -1,26 +1,9 @@
 package com.taehoon.garbagealarm.viewmodel;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
-import android.os.Bundle;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
+import android.util.Log;;
 
-import android.util.Log;
-import android.view.ContextThemeWrapper;
-import android.widget.Toast;
-
-import com.gun0912.tedpermission.TedPermission;
 import com.taehoon.garbagealarm.DAO.NaverMapApi;
 import com.taehoon.garbagealarm.R;
 import com.taehoon.garbagealarm.model.cleanhouse.CleanHouseModel;
@@ -29,12 +12,9 @@ import com.taehoon.garbagealarm.model.cleanhouse.NGeoDomain;
 import com.taehoon.garbagealarm.model.cleanhouse.NgeoCodeModel;
 import com.taehoon.garbagealarm.repository.addrrepository.AddrRoom;
 import com.taehoon.garbagealarm.viewmodel.apihelper.CleanHouseHelper;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
-import com.gun0912.tedpermission.PermissionListener;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -42,10 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by kth919 on 2017-11-08.
@@ -55,10 +31,6 @@ public class GmapLogic {
 
     private static String TAG = GmapLogic.class.getName();
 
-//    private GoogleMap googleMap;
-//    private boolean permissionCheck = true;
-//    private LocationManager locationManager;
-
     private CleanHouseHelper cleanHouseHelper;
 
     ItemModel.MapPoint mapPoint = new ItemModel.MapPoint();
@@ -67,11 +39,7 @@ public class GmapLogic {
     private Gson gson = new Gson();
     private NgeoCodeModel nGeoItem;
 
-//    private static double longitudeStart;    //경도
-//    private static double latitudeStart;
-
     public GmapLogic(Context context) {
-//        locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         naverMapApi = new NaverMapApi(context);
         cleanHouseHelper = new CleanHouseHelper(context.getString(R.string.cleanhouse_key));
     }
@@ -81,7 +49,9 @@ public class GmapLogic {
         ArrayList<MarkerOptions> markerResult = new ArrayList<>();
         ArrayList<CleanHouseModel> cleanHouseList = new ArrayList<>();
 
+        setLocalDB(addrViewModel);
         cleanHouseList = getGeoList(addr, addrViewModel);
+        cleanHouseList = getNearHouse(addr, cleanHouseList);
 
         GetHouseTask getHouseTask = new GetHouseTask(cleanHouseList);
         getHouseTask.start();
@@ -95,14 +65,26 @@ public class GmapLogic {
         markerResult = getHouseTask.getResult();
 
         return markerResult;
-    }
+}
 
     private ArrayList<CleanHouseModel> getGeoList(String addr, AddrViewModel addrViewModel) {
 
         ArrayList<CleanHouseModel> answer = new ArrayList<>();
-        ArrayList<CleanHouseModel> cleanHouseList;
+
+        for (AddrRoom tmp : addrViewModel.getAllAsync()) {
+            if (tmp.getDong().contains(convertKORtoNum(addr))) {
+                answer.add(new CleanHouseModel(tmp.getAddr(), tmp.getDong(), tmp.getLocation(),
+                        tmp.getMapX(), tmp.getMapY()));
+            }
+        }
+
+        return answer;
+    }
+
+    void setLocalDB(AddrViewModel addrViewModel) {
 
         if (addrViewModel.getItemCount() == 0) {
+            ArrayList<CleanHouseModel> cleanHouseList = new ArrayList<>();
 
             HouseApiTask houseApiTask = new HouseApiTask();
             houseApiTask.start();
@@ -115,34 +97,9 @@ public class GmapLogic {
 
             cleanHouseList = houseApiTask.getTmpHouseModel();
 
-            ArrayList<CleanHouseModel> tmplist = new ArrayList<>();
-
-            for (int i = 0; i < cleanHouseList.size(); i++) {
-
-                tmplist.add(new CleanHouseModel(cleanHouseList.get(i).getAddr(), cleanHouseList.get(i).getDong(), cleanHouseList.get(i).getLocation(),
-                        cleanHouseList.get(i).getMapX(), cleanHouseList.get(i).getMapY()));
+            for (CleanHouseModel e : cleanHouseList) {
+                addrViewModel.insert(e);
             }
-
-            answer = getNearHouse(addr, tmplist);
-            setLocalDB(cleanHouseList, addrViewModel);
-
-            return answer;
-
-        } else {
-
-            for (AddrRoom tmp : addrViewModel.getAllAsync()) {
-                answer.add(new CleanHouseModel(tmp.getAddr(), tmp.getDong(), tmp.getLocation(),
-                        tmp.getMapX(), tmp.getMapY()));
-            }
-
-            return answer;
-        }
-    }
-
-    private void setLocalDB(ArrayList<CleanHouseModel> sources, AddrViewModel addrViewModel) {
-
-        for (CleanHouseModel e : sources) {
-            addrViewModel.insert(e);
         }
     }
 
@@ -242,136 +199,6 @@ public class GmapLogic {
         }
     }
 
-//    private PermissionListener permissionlistener = new PermissionListener() {
-//        @Override
-//        public void onPermissionGranted() {
-////            Toast.makeText(context, "권한 허가", Toast.LENGTH_SHORT).show();
-//
-//            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                    && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                // TODO: Consider calling
-//                //    ActivityCompat#requestPermissions
-//                // here to request the missing permissions, and then overriding
-//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                //                                          int[] grantResults)
-//                // to handle the case where the user grants the permission. See the documentation
-//                // for ActivityCompat#requestPermissions for more details.
-//                return;
-//            }
-//            permissionCheck = true;
-//        }
-//
-//        @Override
-//        public void onPermissionDenied(ArrayList<String> deniedPermissions) {
-//            Toast.makeText(context, "권한 거부\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
-//        }
-//    };
-//
-//    //GPS 설정 체크
-//    private void onProviderEnabled() {
-//        new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.myDialog))
-//                .setMessage(R.string.permission_phrases_gps)
-//                .setPositiveButton("설정", new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        // 설정 창을 띄운다
-//                        Intent intent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//                        context.startActivity(intent);
-//                    }
-//                })
-//                .setNegativeButton("취소", null).show();
-//
-//        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                    && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                // TODO: Consider calling
-//                //    ActivityCompat#requestPermissions
-//                // here to request the missing permissions, and then overriding
-//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                //                                          int[] grantResults)
-//                // to handle the case where the user grants the permission. See the documentation
-//                // for ActivityCompat#requestPermissions for more details.
-//                return;
-//            }
-//
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-//                    100, 1 / 5, mMyLocationListener);
-//            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-//                    100, 1 / 5, mMyLocationListener);
-//            googleMap.setMyLocationEnabled(true);
-//        }
-//    }
-//
-//    private LocationListener mMyLocationListener = new LocationListener() {
-//
-//        @Override
-//        public void onLocationChanged(Location location) {
-//
-//            if (location.getProvider().equals(LocationManager.GPS_PROVIDER)
-//                    || location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
-//
-//                double longitude = location.getLongitude();    //경도
-//                double latitude = location.getLatitude();       //위도
-//                float accuracy = location.getAccuracy();
-//
-////                longitudeStart = location.getLongitude();
-////                latitudeStart = location.getLongitude();
-//
-//                //// TODO: 2017-11-10 버튼누르면 위치 초기화하기
-//                LatLng me = new LatLng(latitude, longitude);
-//                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(me, 15));
-//
-//                getEnd(mMyLocationListener);
-//
-////                Log.d(TAG, " 위치" + longitude + " : " + latitude + ":" + accuracy);
-//            }
-//        }
-//
-//        @Override
-//        public void onStatusChanged(String provider, int status, Bundle extras) {
-////            Log.d(TAG, "onStatusChanged" + status);
-//        }
-//
-//        @Override
-//        public void onProviderEnabled(String provider) {
-////            Log.d(TAG, "onProviderEnabled");
-//        }
-//
-//        @Override
-//        public void onProviderDisabled(String provider) {
-////            Log.d(TAG, "onProviderDisabled");
-//            if (provider.equals("gps")) {
-//                locationManager.removeUpdates(mMyLocationListener);
-//            }
-//        }
-//    };
-//
-//    public void updateMyLocation(GoogleMap googlemap) {
-//        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-////            Log.i(TAG, "권한 문제");
-//
-//            // TODO: Consider calling
-//            //    ActivityCompat#requestPermissions
-//            // here to request the missing permissions, and then overriding
-//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//            //                                          int[] grantResults)
-//            // to handle the case where the user grants the permission. See the documentation
-//            // for ActivityCompat#requestPermissions for more details.
-//            return;
-//        }
-//        this.googleMap = googlemap;
-//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-//                0, 0, mMyLocationListener);
-//        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-//                0, 0, mMyLocationListener);
-//
-//        googleMap.setMyLocationEnabled(true);
-//    }
-//
-//    private void getEnd(LocationListener locationListener) {
-//        locationManager.removeUpdates(locationListener);
-//    }
 
     private class HouseApiTask extends Thread { // 제주공공 api
 

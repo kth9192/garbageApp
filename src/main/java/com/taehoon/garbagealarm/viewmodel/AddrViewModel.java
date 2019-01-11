@@ -61,7 +61,7 @@ public class AddrViewModel extends AndroidViewModel {
     }
 
     public ArrayList<MarkerOptions> getMarks(String addr) {
+
         return gmapLogic.getNearHouseMarker(addr, this);
     }
-
 }
