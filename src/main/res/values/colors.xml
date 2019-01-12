@@ -12,4 +12,8 @@
     <color name="unclickedTxt">#000000</color>
     <color name="clickedTxt">#51E895</color>
     <color name="clickedBackground">#01A147</color>
+
+    <color name="tutorial_one">#50cc7f</color>
+    <color name="tutorial_two">#9783E2</color>
+    <color name="tutorial_three">#FF7270</color>
 </resources>

@@ -8,8 +8,7 @@ import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 import android.widget.Toast;
 
-import com.taehoon.garbagealarm.MapUtil;
-import com.taehoon.garbagealarm.viewmodel.GmapLogic;
+import com.taehoon.garbagealarm.utils.MapUtil;
 import com.google.android.gms.maps.GoogleMap;
 
 /**

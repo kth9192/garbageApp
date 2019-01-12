@@ -1,6 +1,8 @@
 package com.taehoon.garbagealarm;
 
 import androidx.databinding.DataBindingUtil;
+
+import android.content.Intent;
 import android.graphics.Typeface;
 
 import com.google.android.material.tabs.TabLayout;
@@ -17,12 +19,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.taehoon.garbagealarm.databinding.ActivityMainBinding;
+import com.taehoon.garbagealarm.utils.Utils;
 import com.taehoon.garbagealarm.view.adapter.TabPagerAdapter;
 import com.taehoon.garbagealarm.view.helper.AlarmHelper;
 
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = MainActivity.class.getName();
+    public static final String PREF_USER_FIRST_TIME = "user_first_time";
 
     private ActivityMainBinding activityMainBinding;
     private AlarmHelper alarmHelper;
@@ -52,6 +56,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         activityMainBinding.tabViewPager.addOnPageChangeListener(tabPageChangeListener);
+
+        boolean isUserFirstTime = Boolean.valueOf(Utils.readSharedSetting(MainActivity.this, PREF_USER_FIRST_TIME, "true"));
+
+        Intent introIntent = new Intent(MainActivity.this, TutorialActivity.class);
+        introIntent.putExtra(PREF_USER_FIRST_TIME, isUserFirstTime);
+
+        if (isUserFirstTime)
+            startActivity(introIntent);
+
     }
 
     public void addTabIcon(){

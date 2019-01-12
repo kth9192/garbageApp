@@ -1,4 +1,4 @@
-package com.taehoon.garbagealarm;
+package com.taehoon.garbagealarm.utils;
 
 import android.Manifest;
 import android.content.Context;
@@ -17,6 +17,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
+import com.taehoon.garbagealarm.R;
 
 import java.util.ArrayList;
 
