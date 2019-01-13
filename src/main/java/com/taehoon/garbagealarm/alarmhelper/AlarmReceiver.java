@@ -30,22 +30,17 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     private static String TAG = AlarmReceiver.class.getName();
 
-    private AlarmLogic alarmLogic;
-    private MemoLogic memoLogic;
-    private String id;
-    private ArrayList<Integer> days;
-
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        id = UUID.randomUUID().toString();
+        String id = UUID.randomUUID().toString();
 
-        alarmLogic = new AlarmLogic(context);
-        memoLogic = new MemoLogic(context);
+        AlarmLogic alarmLogic = new AlarmLogic(context);
+        MemoLogic memoLogic = new MemoLogic(context);
 
         String comment = alarmLogic.getContent(memoLogic.getDayList());
         String memo = intent.getStringExtra("memo");
-        days = intent.getIntegerArrayListExtra("daylist");
+        ArrayList<Integer> days = intent.getIntegerArrayListExtra("daylist");
 
         for (int i = 0; i < days.size(); i++) {
             Log.d(TAG, "요일 확인" + days.get(i));
@@ -56,7 +51,6 @@ public class AlarmReceiver extends BroadcastReceiver {
         NotificationManager notificationManager = null;
 
         if (days.contains(alarmLogic.currentDayOfWeek())) {
-
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 CharSequence name = "test";

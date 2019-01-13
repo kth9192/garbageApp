@@ -63,7 +63,7 @@ public class TmpMarkerLogic {
         //TODO 좌표가 가질 값 : address, location , mapX, mapY
 
         for (int i = 0; i < apiAddr.size(); i++) {
-            if (!apiAddr.get(i).getDong().isEmpty()) {
+            if (!apiAddr.get(i).getDong().isEmpty() && !apiAddr.get(i).getAddr().isEmpty()) {
                 RoadApiTask roadApiTask = new RoadApiTask(apiAddr.get(i).getAddr());
                 roadApiTask.start();
 
@@ -148,51 +148,6 @@ public class TmpMarkerLogic {
         }
     }
 
-    private boolean checkCorrectAddr(String addr, CleanHouseModel apiAddr) {
-
-        boolean answer = false;
-
-        if (apiAddr.getAddr().contains(convertKORtoNum(addr)) || apiAddr.getDong().contains(convertKORtoNum(addr))
-                || apiAddr.getAddr().contains(addr) || apiAddr.getDong().contains(addr)) {
-            answer = true;
-        }
-        return answer;
-    }
-
-    ArrayList<CleanHouseModel> getJejuApi(){
-        //TODO 구글 검색창으로 받은 검색어를 cleanhouse api 의 주소와 비교해서 필요한 것만 뽑음
-
-        HouseApiTask houseApiTask = new HouseApiTask();
-        houseApiTask.start();
-
-        try {
-            houseApiTask.join();
-        } catch (InterruptedException e) {
-            Log.e(TAG, "house thread error" + e);
-        }
-
-        return houseApiTask.getTmpHouseModel();
-    }
-
-    private class HouseApiTask extends Thread { // 제주공공 api
-
-        private ArrayList<CleanHouseModel> tmpHouseModel;
-
-        @Override
-        public void run() {
-            super.run();
-            try {
-                tmpHouseModel = cleanHouseHelper.apiParserInit();
-            } catch (Exception e) {
-                Log.e(TAG, "api async 에러" + String.valueOf(e));
-            }
-        }
-
-        public ArrayList<CleanHouseModel> getTmpHouseModel() {
-            return tmpHouseModel;
-        }
-    }
-
     private class RoadApiTask extends Thread { //naver api
 
         private String TAG2 = RoadApiTask.class.getName();
@@ -217,38 +172,6 @@ public class TmpMarkerLogic {
 
         public ItemModel.MapPoint getTmpPoint() {
             return tmpPoint;
-        }
-    }
-
-    private class GetHouseTask extends Thread { // 구글맵 마커
-
-        ArrayList<CleanHouseModel> tmpGeoList;
-
-        ArrayList<MarkerOptions> result = new ArrayList<>();
-
-        public GetHouseTask(ArrayList<CleanHouseModel> tmpGeoList) {
-            this.tmpGeoList = tmpGeoList;
-        }
-
-        @Override
-        public void run() {
-            super.run();
-            StringBuilder tmptitle = new StringBuilder();
-            LatLng tmpLocation;
-
-            for (int i = 0; i < tmpGeoList.size(); i++) {
-                tmpLocation = new LatLng(tmpGeoList.get(i).getMapY(), tmpGeoList.get(i).getMapX());
-                Log.d(TAG, "좌표확인" + tmpLocation.toString());
-
-                tmptitle.append(tmpGeoList.get(i).getLocation());
-                result.add(new MarkerOptions().position(tmpLocation).title(tmptitle.toString()));
-                Log.d(TAG, "좌표확인" + result.get(i).getPosition() + " : " + result.get(i).getTitle());
-                tmptitle.setLength(0);
-            }
-        }
-
-        public ArrayList<MarkerOptions> getResult() {
-            return result;
         }
     }
 

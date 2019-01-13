@@ -69,7 +69,8 @@
 
     <string name="tutorial_str_one">요일별 메모와 알람을 설정할 수 있습니다. \n
         사용하고 싶으신 여러 요일에만 적용도 가능합니다</string>
-    <string name="tutorial_str_two">알람 카드에서 알람 수정 및 메모 수정이 가능합니다.</string>
+    <string name="tutorial_str_two">알람 카드에서 메모 확인을 할 수 있습니다.
+    위로 끌어당겨 삭제합니다.</string>
     <string name="tutorial_str_three">지도에서 원하는 주소(동, 리)를 입력하면 \n
         주소에 등록된 클린하우스 위치를 파악할 수 있습니다.</string>
 

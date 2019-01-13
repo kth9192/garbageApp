@@ -60,6 +60,10 @@ public class AddrViewModel extends AndroidViewModel {
         return addrRepository.getItemCount(dong);
     }
 
+    public int getAllItemCount() {
+        return addrRepository.getAllItemCount();
+    }
+
     public ArrayList<MarkerOptions> getMarks(String addr) {
 
         return gmapLogic.getNearHouseMarker(addr, this);

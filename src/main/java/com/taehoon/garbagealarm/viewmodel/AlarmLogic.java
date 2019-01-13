@@ -24,30 +24,39 @@ public class AlarmLogic {
 
     public AlarmLogic(Context context) {
         this.context = context;
+        am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
-    private void setAm(int id){
-        am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+    private void setSender(int id){
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
         sender = PendingIntent.getBroadcast(context, id, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public void newAlarm(ArrayList<Integer> enableDays, int id, long setttingTime, String memo) {
 
+        setSender(id);
+
         Intent tmpIntent = new Intent(context, AlarmReceiver.class);
         tmpIntent.putExtra("daylist", enableDays);
         tmpIntent.putExtra("memo", memo);
 
-        setAm(id);
-
         am.setInexactRepeating(AlarmManager.RTC_WAKEUP, setttingTime,
                 AlarmManager.INTERVAL_DAY, sender);
+
+        if(System.currentTimeMillis() < setttingTime) {
+            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, setttingTime,
+                    AlarmManager.INTERVAL_DAY, sender);
+        }else {
+            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, setttingTime + AlarmManager.INTERVAL_DAY,
+                    AlarmManager.INTERVAL_DAY, sender);
+        }
     }
 
     public void unregisterAlarm(int id){
 
-        setAm(id);
+        setSender(id);
         am.cancel(sender);
+        sender.cancel();
         am = null;
         sender = null;
     }
