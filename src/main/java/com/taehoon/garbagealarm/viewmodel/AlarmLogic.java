@@ -24,54 +24,62 @@ public class AlarmLogic {
 
     public AlarmLogic(Context context) {
         this.context = context;
+        am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
-    private void setAm(int id){
-        am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+    private void setSender(int id) {
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
         sender = PendingIntent.getBroadcast(context, id, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public void newAlarm(ArrayList<Integer> enableDays, int id, long setttingTime, String memo) {
 
+        setSender(id);
+
         Intent tmpIntent = new Intent(context, AlarmReceiver.class);
         tmpIntent.putExtra("daylist", enableDays);
         tmpIntent.putExtra("memo", memo);
 
-        setAm(id);
-
-        am.setInexactRepeating(AlarmManager.RTC_WAKEUP, setttingTime,
-                AlarmManager.INTERVAL_DAY, sender);
+        if (System.currentTimeMillis() < setttingTime) {
+            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, setttingTime,
+                    AlarmManager.INTERVAL_DAY, sender);
+        } else {
+            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, setttingTime + AlarmManager.INTERVAL_DAY,
+                    AlarmManager.INTERVAL_DAY, sender);
+            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, setttingTime,
+                    AlarmManager.INTERVAL_DAY, sender);
+        }
     }
 
-    public void unregisterAlarm(int id){
+    public void unregisterAlarm(int id) {
 
-        setAm(id);
+        setSender(id);
         am.cancel(sender);
+        sender.cancel();
         am = null;
         sender = null;
     }
 
-    public int currentDayOfWeek(){
+    public int currentDayOfWeek() {
         Calendar calendar = Calendar.getInstance();
 
         return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
-    public ArrayList<Integer> convertDayOfWeek(ArrayList<String> arr){
+    public ArrayList<Integer> convertDayOfWeek(ArrayList<String> arr) {
 
         ArrayList<Integer> answer = new ArrayList<>();
 
-        for (int i = 0; i<arr.size(); i++){
+        for (int i = 0; i < arr.size(); i++) {
             answer.add(dayConvertToInt(arr.get(i)));
         }
         return answer;
     }
 
-    public int dayConvertToInt(String s){
+    public int dayConvertToInt(String s) {
 
         int answer = 0;
-        switch (s){
+        switch (s) {
             case "일":
                 answer = 1;
                 break;
@@ -106,11 +114,11 @@ public class AlarmLogic {
         return calendar.getTimeInMillis();
     }
 
-    public String getContent(ArrayList<DayModel> dayModelList){
+    public String getContent(ArrayList<DayModel> dayModelList) {
 
         String content = null;
 
-        for (int i = 0; i< dayModelList.size(); i++){
+        for (int i = 0; i < dayModelList.size(); i++) {
             if (dayModelList.get(i).getDay().equals(setNotifyText())) {
 //                Log.d(TAG , "json 내장 : " + dayModelList.get(i).getDay() + " 오늘 : " + NotifyTextLogic() );
                 content = dayModelList.get(i).getComment();
@@ -119,13 +127,13 @@ public class AlarmLogic {
         return content;
     }
 
-    public String setNotifyText(){
+    public String setNotifyText() {
 
         String dayIs = null;
         Calendar calendar = Calendar.getInstance();
         int whatDay = calendar.get(Calendar.DAY_OF_WEEK);
 
-        switch (whatDay){
+        switch (whatDay) {
             case 1:
                 dayIs = "일요일";
                 break;
