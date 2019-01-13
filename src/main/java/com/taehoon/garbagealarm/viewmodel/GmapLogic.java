@@ -11,7 +11,6 @@ import com.taehoon.garbagealarm.model.cleanhouse.ItemModel;
 import com.taehoon.garbagealarm.model.cleanhouse.NGeoDomain;
 import com.taehoon.garbagealarm.model.cleanhouse.NgeoCodeModel;
 import com.taehoon.garbagealarm.repository.addrrepository.AddrRoom;
-import com.taehoon.garbagealarm.utils.TmpMarkerLogic;
 import com.taehoon.garbagealarm.viewmodel.apihelper.CleanHouseHelper;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -40,13 +39,11 @@ public class GmapLogic {
     private NaverMapApi naverMapApi;
     private Gson gson = new Gson();
     private NgeoCodeModel nGeoItem;
-    private TmpMarkerLogic tmpMarkerLogic;
 
     public GmapLogic(Context context) {
         naverMapApi = new NaverMapApi(context);
         cleanHouseHelper = new CleanHouseHelper(context.getString(R.string.cleanhouse_key));
 
-        tmpMarkerLogic = new TmpMarkerLogic(context);
     }
 
     public ArrayList<MarkerOptions> getNearHouseMarker(String addr, AddrViewModel addrViewModel) {
