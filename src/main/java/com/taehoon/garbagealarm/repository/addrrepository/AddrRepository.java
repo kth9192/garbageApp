@@ -38,9 +38,4 @@ public class AddrRepository {
         return alarmDao.getItemCount(dong);
     }
 
-    public int getAllItemCount(){
-        return alarmDao.getAllItemCount();
-    }
-
-
 }

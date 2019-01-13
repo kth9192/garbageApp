@@ -24,7 +24,4 @@ public interface AddrDao {
     @Query("SELECT COUNT(id) FROM AddrRoom where dong = :dong")
     int getItemCount(String dong);
 
-    @Query("SELECT COUNT(id) FROM AddrRoom")
-    int getAllItemCount();
-
 }

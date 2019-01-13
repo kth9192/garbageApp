@@ -130,6 +130,12 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Objects.requireNonNull(getContext()).unregisterReceiver(gpsReceiver);
+    }
+
+    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
@@ -138,15 +144,8 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
     public void onStart() {
         super.onStart();
         mapUtil.doCheckPermission();
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.execute(() -> addrViewModel.setLocalDB());
-    }
-
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Objects.requireNonNull(getContext()).unregisterReceiver(gpsReceiver);
+//        ExecutorService executorService = Executors.newSingleThreadExecutor();
+//        executorService.execute(() -> addrViewModel.setLocalDB());
     }
 
     @Override

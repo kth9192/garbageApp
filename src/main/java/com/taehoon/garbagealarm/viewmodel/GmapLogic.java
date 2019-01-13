@@ -54,7 +54,7 @@ public class GmapLogic {
         ArrayList<MarkerOptions> markerResult = new ArrayList<>();
         ArrayList<CleanHouseModel> cleanHouseList = new ArrayList<>();
 
-//        setLocalDB(addr, addrViewModel, getNearHouseWithNaver(addr, getJejuApi())); // 네이버 api로 가공 및 db전달
+        setLocalDB(addr, addrViewModel, getNearHouseWithNaver(addr, getJejuApi())); // 네이버 api로 가공 및 db전달
 
         cleanHouseList = getGeoList(addr, addrViewModel); //db에서 불러옴
 
@@ -98,11 +98,11 @@ public class GmapLogic {
 
     void setTmpLocalDB(AddrViewModel addrViewModel){
 
-        if (addrViewModel.getAllItemCount() == 0){
-            for (CleanHouseModel model : tmpMarkerLogic.getNearHouseWithNaver(getJejuApi())){
-                addrViewModel.insert(model);
-            }
-        }
+//        if (addrViewModel.getItemCount() == 0){
+//            for (CleanHouseModel model : tmpMarkerLogic.getNearHouseWithNaver(getJejuApi())){
+//                addrViewModel.insert(model);
+//            }
+//        }
     }
 
     private ArrayList<CleanHouseModel> getJejuApi(){

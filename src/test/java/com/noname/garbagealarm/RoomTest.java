@@ -27,5 +27,23 @@ import androidx.lifecycle.ViewModelProviders;
 
 public class RoomTest {
 
+    @Mock
+    Context mContext;
 
+    @Mock
+    GmapLogic gmapLogic;
+
+    @Mock
+    AddrViewModel addrViewModel;
+
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+    @Test
+    public void checkRoomGetAll(){
+        GmapLogic gmapLogic = new GmapLogic(mContext);
+        gmapLogic.setAddrViewModel(addrViewModel);
+        assertNull(gmapLogic.getNearHouseMarker("일도이동"));
+
+    }
 }
