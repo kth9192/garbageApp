@@ -43,6 +43,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by kth919 on 2017-11-08.
@@ -141,6 +144,8 @@ public class TabFragment3 extends Fragment implements OnMapReadyCallback {
     public void onStart() {
         super.onStart();
         mapUtil.doCheckPermission();
+//        ExecutorService executorService = Executors.newSingleThreadExecutor();
+//        executorService.execute(() -> addrViewModel.setLocalDB());
     }
 
     @Override

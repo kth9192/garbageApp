@@ -64,4 +64,8 @@ public class AddrViewModel extends AndroidViewModel {
 
         return gmapLogic.getNearHouseMarker(addr, this);
     }
+
+    public void setLocalDB() {
+        gmapLogic.setTmpLocalDB(this);
+    }
 }

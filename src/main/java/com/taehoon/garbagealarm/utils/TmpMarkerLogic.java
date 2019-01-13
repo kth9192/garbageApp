@@ -1,9 +1,11 @@
-package com.taehoon.garbagealarm.viewmodel;
+package com.taehoon.garbagealarm.utils;
 
 import android.content.Context;
+import android.util.Log;
 
-import android.util.Log;;
-
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 import com.taehoon.garbagealarm.DAO.NaverMapApi;
 import com.taehoon.garbagealarm.R;
 import com.taehoon.garbagealarm.model.cleanhouse.CleanHouseModel;
@@ -11,11 +13,9 @@ import com.taehoon.garbagealarm.model.cleanhouse.ItemModel;
 import com.taehoon.garbagealarm.model.cleanhouse.NGeoDomain;
 import com.taehoon.garbagealarm.model.cleanhouse.NgeoCodeModel;
 import com.taehoon.garbagealarm.repository.addrrepository.AddrRoom;
-import com.taehoon.garbagealarm.utils.TmpMarkerLogic;
+import com.taehoon.garbagealarm.viewmodel.AddrViewModel;
+import com.taehoon.garbagealarm.viewmodel.GmapLogic;
 import com.taehoon.garbagealarm.viewmodel.apihelper.CleanHouseHelper;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -25,54 +25,23 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
-/**
- * Created by kth919 on 2017-11-08.
- */
+public class TmpMarkerLogic {
 
-public class GmapLogic {
-
-    private static String TAG = GmapLogic.class.getName();
-
-    private CleanHouseHelper cleanHouseHelper;
-
-    ItemModel.MapPoint mapPoint = new ItemModel.MapPoint();
+    //TODO : addr 값 없이 전체 api를 모두 불러오기
+    private static String TAG = TmpMarkerLogic.class.getSimpleName();
 
     private NaverMapApi naverMapApi;
     private Gson gson = new Gson();
-    private NgeoCodeModel nGeoItem;
-    private TmpMarkerLogic tmpMarkerLogic;
+    private CleanHouseHelper cleanHouseHelper;
+    private ItemModel.MapPoint mapPoint = new ItemModel.MapPoint();
+    NgeoCodeModel nGeoItem;
 
-    public GmapLogic(Context context) {
+    public TmpMarkerLogic(Context context) {
         naverMapApi = new NaverMapApi(context);
         cleanHouseHelper = new CleanHouseHelper(context.getString(R.string.cleanhouse_key));
-
-        tmpMarkerLogic = new TmpMarkerLogic(context);
     }
 
-    public ArrayList<MarkerOptions> getNearHouseMarker(String addr, AddrViewModel addrViewModel) {
-
-        ArrayList<MarkerOptions> markerResult = new ArrayList<>();
-        ArrayList<CleanHouseModel> cleanHouseList = new ArrayList<>();
-
-        setLocalDB(addrViewModel, getNearHouseWithNaver(addr, getJejuApi())); // 네이버 api로 가공 및 db전달
-
-        cleanHouseList = getGeoList(addr, addrViewModel); //db에서 불러옴
-
-        GetHouseTask getHouseTask = new GetHouseTask(cleanHouseList);
-        getHouseTask.start();
-
-        try {
-            getHouseTask.join();
-        } catch (InterruptedException e) {
-            Log.e(TAG, "finalResult thread error " + e);
-        }
-
-        markerResult = getHouseTask.getResult();
-
-        return markerResult;
-}
-
-    private ArrayList<CleanHouseModel> getGeoList(String addr, AddrViewModel addrViewModel) {
+    public ArrayList<CleanHouseModel> getGeoList(String addr, AddrViewModel addrViewModel) {
 
         ArrayList<CleanHouseModel> answer = new ArrayList<>();
 
@@ -86,41 +55,7 @@ public class GmapLogic {
         return answer;
     }
 
-    void setLocalDB(AddrViewModel addrViewModel, ArrayList<CleanHouseModel> source) {
-
-        if (addrViewModel.getItemCount() == 0) {
-
-            for (CleanHouseModel e : source) {
-                addrViewModel.insert(e);
-            }
-        }
-    }
-
-    void setTmpLocalDB(AddrViewModel addrViewModel){
-
-        if (addrViewModel.getItemCount() == 0){
-            for (CleanHouseModel model : tmpMarkerLogic.getNearHouseWithNaver(getJejuApi())){
-                addrViewModel.insert(model);
-            }
-        }
-    }
-
-    private ArrayList<CleanHouseModel> getJejuApi(){
-        //TODO 구글 검색창으로 받은 검색어를 cleanhouse api 의 주소와 비교해서 필요한 것만 뽑음
-
-        HouseApiTask houseApiTask = new HouseApiTask();
-        houseApiTask.start();
-
-        try {
-            houseApiTask.join();
-        } catch (InterruptedException e) {
-            Log.e(TAG, "house thread error" + e);
-        }
-
-        return houseApiTask.getTmpHouseModel();
-    }
-
-    private ArrayList<CleanHouseModel> getNearHouseWithNaver(String addr, ArrayList<CleanHouseModel> apiAddr) {
+    public ArrayList<CleanHouseModel> getNearHouseWithNaver(ArrayList<CleanHouseModel> apiAddr) {
 
         ArrayList<CleanHouseModel> result = new ArrayList<>();
 
@@ -128,8 +63,7 @@ public class GmapLogic {
         //TODO 좌표가 가질 값 : address, location , mapX, mapY
 
         for (int i = 0; i < apiAddr.size(); i++) {
-            if (checkCorrectAddr(addr, apiAddr.get(i))) {
-
+            if (!apiAddr.get(i).getDong().isEmpty()) {
                 RoadApiTask roadApiTask = new RoadApiTask(apiAddr.get(i).getAddr());
                 roadApiTask.start();
 
@@ -139,7 +73,7 @@ public class GmapLogic {
                     Log.e(TAG, "roadApi thread error" + e);
                 }
                 mapPoint = roadApiTask.getTmpPoint();
-                Log.d(TAG, "mapPoint source" + mapPoint.getMapX());
+//                Log.d(TAG, "mapPoint source" + mapPoint.getMapX());
 
                 if (mapPoint != null) {
                     result.add(new CleanHouseModel(apiAddr.get(i).getAddr(), apiAddr.get(i).getDong(), apiAddr.get(i).getLocation(),
@@ -150,17 +84,6 @@ public class GmapLogic {
             }
         }
         return result;
-    }
-
-    private boolean checkCorrectAddr(String addr, CleanHouseModel apiAddr) {
-
-        boolean answer = false;
-
-        if (apiAddr.getAddr().contains(convertKORtoNum(addr)) || apiAddr.getDong().contains(convertKORtoNum(addr))
-                || apiAddr.getAddr().contains(addr) || apiAddr.getDong().contains(addr)) {
-            answer = true;
-        }
-        return answer;
     }
 
     private String convertKORtoNum(String tmp) {
@@ -197,6 +120,7 @@ public class GmapLogic {
             } else {  // 에러 발생
                 br = null;
 //                br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
+
                 StringBuffer buffer = new StringBuffer();
                 InputStream is = con.getErrorStream();
                 byte[] b = new byte[4096];
@@ -224,6 +148,31 @@ public class GmapLogic {
         }
     }
 
+    private boolean checkCorrectAddr(String addr, CleanHouseModel apiAddr) {
+
+        boolean answer = false;
+
+        if (apiAddr.getAddr().contains(convertKORtoNum(addr)) || apiAddr.getDong().contains(convertKORtoNum(addr))
+                || apiAddr.getAddr().contains(addr) || apiAddr.getDong().contains(addr)) {
+            answer = true;
+        }
+        return answer;
+    }
+
+    ArrayList<CleanHouseModel> getJejuApi(){
+        //TODO 구글 검색창으로 받은 검색어를 cleanhouse api 의 주소와 비교해서 필요한 것만 뽑음
+
+        HouseApiTask houseApiTask = new HouseApiTask();
+        houseApiTask.start();
+
+        try {
+            houseApiTask.join();
+        } catch (InterruptedException e) {
+            Log.e(TAG, "house thread error" + e);
+        }
+
+        return houseApiTask.getTmpHouseModel();
+    }
 
     private class HouseApiTask extends Thread { // 제주공공 api
 

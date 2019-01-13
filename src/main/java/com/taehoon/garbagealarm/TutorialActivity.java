@@ -208,7 +208,7 @@ public class TutorialActivity extends AppCompatActivity {
 
             fragmentTutorialBinding.sectionLabel.setText(strs[getArguments().getInt(ARG_SECTION_NUMBER) -1 ]);
 
-            Glide.with(this).load(bgs[getArguments().getInt(ARG_SECTION_NUMBER) - 1]).into(fragmentTutorialBinding.img);
+            Glide.with(PlaceholderFragment.this).load(bgs[getArguments().getInt(ARG_SECTION_NUMBER) - 1]).into(fragmentTutorialBinding.img);
 
             return fragmentTutorialBinding.getRoot();
         }
