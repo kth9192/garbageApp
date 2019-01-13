@@ -34,8 +34,8 @@ public class AddrRepository {
         return alarmDao.getAllAsync();
     }
 
-    public int getItemCount(){
-        return alarmDao.getItemCount();
+    public int getItemCount(String dong){
+        return alarmDao.getItemCount(dong);
     }
 
 }

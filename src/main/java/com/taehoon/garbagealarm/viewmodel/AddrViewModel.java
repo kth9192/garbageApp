@@ -56,8 +56,8 @@ public class AddrViewModel extends AndroidViewModel {
         return addrRepository.getAllAsync();
     }
 
-    public int getItemCount() {
-        return addrRepository.getItemCount();
+    public int getItemCount(String dong) {
+        return addrRepository.getItemCount(dong);
     }
 
     public ArrayList<MarkerOptions> getMarks(String addr) {

@@ -21,7 +21,7 @@ public interface AddrDao {
     @Query("SELECT * FROM AddrRoom")
     List<AddrRoom> getAllAsync();
 
-    @Query("SELECT COUNT(id) FROM AddrRoom")
-    int getItemCount();
+    @Query("SELECT COUNT(id) FROM AddrRoom where dong = :dong")
+    int getItemCount(String dong);
 
 }
