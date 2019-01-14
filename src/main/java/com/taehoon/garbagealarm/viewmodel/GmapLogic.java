@@ -232,7 +232,7 @@ public class GmapLogic {
             try {
                 tmpHouseModel = cleanHouseHelper.apiParserInit();
             } catch (Exception e) {
-                Log.e(TAG, "api async 에러" + String.valueOf(e));
+//                Log.e(TAG, "api async 에러" + String.valueOf(e));
             }
         }
 

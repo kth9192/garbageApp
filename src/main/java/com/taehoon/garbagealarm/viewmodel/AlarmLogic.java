@@ -76,31 +76,25 @@ public class AlarmLogic {
 
     public int dayConvertToInt(String s) {
 
-        int answer = 0;
+//        int answer = 0;
         switch (s) {
             case "일":
-                answer = 1;
-                break;
+                return 1;
             case "월":
-                answer = 2;
-                break;
+                return 2;
             case "화":
-                answer = 3;
-                break;
+                return 3;
             case "수":
-                answer = 4;
-                break;
+                return 4;
             case "목":
-                answer = 5;
-                break;
+                return 5;
             case "금":
-                answer = 6;
-                break;
+                return 6;
             case "토":
-                answer = 7;
-                break;
+                return 7;
+            default:
+                return 0;
         }
-        return answer;
     }
 
     public long convertAlarmTime(int hourOfDay, int minute) {

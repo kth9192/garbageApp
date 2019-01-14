@@ -18,7 +18,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {MemoRoom.class, AlarmRoom.class, ConfigRoom.class, AddrRoom.class}, version = 1, exportSchema = false)
+@Database(entities = {MemoRoom.class, AlarmRoom.class, ConfigRoom.class, AddrRoom.class}, version = 2, exportSchema = false)
 @TypeConverters({AlarmConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract MemoDao chatDao();
@@ -34,6 +34,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             AppDatabase.class, "database")
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }
